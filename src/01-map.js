@@ -2,7 +2,7 @@ import * as d3 from 'd3'
 
 // Set up margin/height/width
 
-var margin = { top: 100, left: 80, right: 105, bottom: 80 }
+var margin = { top: 100, left: 100, right: 105, bottom: 80 }
 
 var height = 700 - margin.top - margin.bottom
 
@@ -56,7 +56,7 @@ var line = d3
 
 // Read in your housing price data
 
-d3.csv(require('./data/gift_data_2012_2017.csv'))
+d3.csv(require('./data/gift_data_top5_2012_2017.csv'))
   .then(ready)
   .catch(err => {
     //  console.log("The error is", err)
@@ -74,8 +74,8 @@ function ready(datapoints) {
 
   // Get a list of dates and a list of prices
 
-  let years = datapoints.map(d => +d.datetime)
-
+  let years = datapoints.map(d => d.datetime)
+  console.log(d3.extent(years))
   let gifts = datapoints.map(d => +d.GiftAmount)
 
   xPositionScale.domain(d3.extent(years))
@@ -89,7 +89,7 @@ function ready(datapoints) {
     .key(d => d.Country)
     .entries(datapoints)
 
-  // console.log(nested)
+  console.log(nested)
 
   // Draw your lines
 
@@ -152,7 +152,10 @@ function ready(datapoints) {
     .attr('font-size', 12)
     .attr('dx', 5)
     .attr('dy', function(d) {
-      if (d.key === 'West North Central') {
+      if (d.key === 'CHINA') {
+        return -2
+      }
+      if (d.key === 'SAUDI ARABIA') {
         return 6
       }
       return 3
@@ -171,7 +174,7 @@ function ready(datapoints) {
   svg
     .append('text')
     .text(
-      'The top 10 countries with the biggest total sum of donations in 2012-2017'
+      'The top 5 countries with the biggest total sum of donations in 2012-2017'
     )
     .attr('x', width / 2)
     .attr('y', -20)
@@ -216,8 +219,7 @@ function ready(datapoints) {
         .attr('stroke', 'none')
     })
 
-  // QATAR-point
-
+//QATAR-point 
   svg
     .selectAll('.qatar-circle')
     .data(nested)
@@ -243,16 +245,17 @@ function ready(datapoints) {
       console.log('I got clicked')
 
       d3.select('#info_qatar').style('display', 'block')
-      d3.select('.qatar-circle')
+      d3.select(this)
         .attr('r', 10)
         .attr('stroke', 'black')
     })
     .on('mouseout', function(d) {
       d3.select('#info_qatar').style('display', 'none')
-      d3.select('.qatar-circle')
+      d3.select(this)
         .attr('r', 8)
         .attr('stroke', 'none')
     })
+
 
   // ENGLAND-point
 
@@ -283,32 +286,42 @@ function ready(datapoints) {
       console.log('I got clicked')
 
       d3.select('#info_england').style('display', 'block')
-      d3.select('.qatar-circle')
+      d3.select(this)
         .attr('r', 10)
         .attr('stroke', 'black')
     })
     .on('mouseout', function(d) {
       d3.select('#info_england').style('display', 'none')
-      d3.select('.england-circle')
+      d3.select(this)
         .attr('r', 8)
         .attr('stroke', 'none')
     })
 
   // Add your axes
 
-  var xAxis = d3.axisBottom(xPositionScale).tickFormat(d3.timeFormat('%m-%Y'))
-  // .ticks(d3.timeYear.every(2))
-  // var xAxis = d3.axisBottom(xPositionScale).ticks(d3.timeYear)
+  var xAxis = d3
+  .axisBottom(xPositionScale)
+  .tickFormat(d3.timeFormat('%Y'))
+  .tickValues([new Date("2012"), new Date("2013"), new Date("2014"),
+    new Date("2015"),new Date("2016"), new Date("2017")])
+
 
   svg
     .append('g')
     .attr('class', 'axis x-axis')
     .attr('transform', 'translate(0,' + height + ')')
     .call(xAxis)
-  //  .call(xAxis.ticks(d3.timeYear))
+  // .call(xAxis.ticks(d3.timeYear))
 
   // console.log(xPositionScale.domain())
   var yAxis = d3.axisLeft(yPositionScale)
+ .ticks(7)
+  .tickFormat(function(d){
+    console.log(d)
+  
+    return d/1000000 + ' millions' 
+  
+  })
 
   svg
     .append('g')
